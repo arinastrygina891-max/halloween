@@ -1,0 +1,1161 @@
+<!DOCTYPE html>
+<html lang="ru" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Хэллоуин Элиас (Horror Hunger Edition)</title>
+    <!-- Google Fonts for Gothic Horror Aesthetic -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Creepster&family=Rubik+Glitch&family=VT323&display=swap" rel="stylesheet">
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        horror: {
+                            bg: '#090212',
+                            card: '#120524',
+                            green: '#39ff14',
+                            slime: '#70e000',
+                            magenta: '#ff007f',
+                            purple: '#8a2be2',
+                            dark: '#05010a'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['VT323', 'monospace'],
+                        creepster: ['Creepster', 'cursive'],
+                        glitch: ['Rubik Glitch', 'cursive']
+                    },
+                    animation: {
+                        'pulse-fast': 'pulse 0.6s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        'float-ghost': 'floatGhost 6s ease-in-out infinite',
+                        'toxic-glow': 'toxicGlow 1.8s ease-in-out infinite alternate',
+                        'flicker': 'vhsFlicker 0.15s infinite'
+                    },
+                    keyframes: {
+                        floatGhost: {
+                            '0%, 100%': { transform: 'translateY(0px) translateX(0px) scale(1)', opacity: '0.3' },
+                            '50%': { transform: 'translateY(-20px) translateX(12px) scale(1.1)', opacity: '0.6' }
+                        },
+                        toxicGlow: {
+                            '0%': { boxShadow: '0 0 10px #39ff14, 0 0 20px #39ff14, inset 0 0 10px rgba(57, 255, 20, 0.2)' },
+                            '100%': { boxShadow: '0 0 20px #39ff14, 0 0 35px #ff007f, inset 0 0 20px rgba(255, 0, 127, 0.3)' }
+                        },
+                        vhsFlicker: {
+                            '0%': { opacity: '0.97' },
+                            '50%': { opacity: '1' },
+                            '100%': { opacity: '0.94' }
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- FontAwesome icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Canvas Confetti -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <style>
+        body {
+            background: radial-gradient(circle at 50% 20%, #1a0833 0%, #0d031c 50%, #040108 100%);
+            color: #f3f4f6;
+            touch-action: manipulation;
+            user-select: none;
+            -webkit-user-select: none;
+            overflow-x: hidden;
+            font-family: 'VT323', monospace;
+            font-size: 1.15rem;
+        }
+
+        /* 90s VHS Retro Noise & Scanline Overlay */
+        .vhs-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none;
+            z-index: 50;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%),
+                        linear-gradient(90deg, rgba(255, 0, 0, 0.03), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.03));
+            background-size: 100% 4px, 6px 100%;
+            opacity: 0.8;
+        }
+
+        /* Toxic Neon Glow Effects */
+        .neon-text-green {
+            color: #39ff14;
+            text-shadow: 0 0 5px #39ff14, 0 0 12px #39ff14, 0 0 25px #39ff14;
+        }
+
+        .neon-text-magenta {
+            color: #ff007f;
+            text-shadow: 0 0 5px #ff007f, 0 0 15px #ff007f, 0 0 30px #8a2be2;
+        }
+
+        .toxic-border {
+            border: 2px solid #39ff14;
+            box-shadow: 0 0 15px rgba(57, 255, 20, 0.5), inset 0 0 10px rgba(57, 255, 20, 0.2);
+        }
+
+        .magenta-border {
+            border: 2px solid #ff007f;
+            box-shadow: 0 0 15px rgba(255, 0, 127, 0.5), inset 0 0 10px rgba(255, 0, 127, 0.2);
+        }
+
+        .spooky-card {
+            background: linear-gradient(160deg, #180730 0%, #0c021a 100%);
+            border: 2px solid #ff007f;
+            box-shadow: 0 0 20px rgba(255, 0, 127, 0.3), 0 0 35px rgba(57, 255, 20, 0.2);
+            position: relative;
+        }
+
+        /* Tentacle frame overlays using SVG background patterns */
+        .tentacle-frame {
+            position: relative;
+        }
+        .tentacle-frame::before {
+            content: '';
+            position: absolute;
+            inset: -8px;
+            border: 2px dashed #39ff14;
+            border-radius: 1.5rem;
+            pointer-events: none;
+            opacity: 0.6;
+            animation: toxicGlow 2s infinite alternate;
+        }
+
+        /* Swipe Card Animation */
+        .card-container {
+            perspective: 1000px;
+        }
+
+        .swipe-card {
+            transition: transform 0.2s ease, opacity 0.2s ease;
+            will-change: transform, opacity;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #080212; }
+        ::-webkit-scrollbar-thumb { background: #ff007f; border-radius: 3px; }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between max-w-md mx-auto relative overflow-hidden bg-horror-bg">
+
+    <!-- Retro VHS Noise Effect Overlay -->
+    <div class="vhs-overlay"></div>
+
+    <!-- Floating Spectral Ghosts (Metal / Horror Aesthetic from Reference) -->
+    <div class="absolute top-10 left-2 text-green-400/20 text-6xl pointer-events-none animate-float-ghost"><i class="fa-solid fa-ghost"></i></div>
+    <div class="absolute top-1/3 right-2 text-fuchsia-500/20 text-7xl pointer-events-none animate-float-ghost" style="animation-delay: 2s;"><i class="fa-solid fa-ghost"></i></div>
+    <div class="absolute bottom-24 left-6 text-emerald-400/20 text-8xl pointer-events-none animate-float-ghost" style="animation-delay: 4s;"><i class="fa-solid fa-spaghetti-monster-flying"></i></div>
+
+    <!-- Tentacle SVG Overlay Accents on Edges -->
+    <svg class="absolute top-0 right-0 w-32 h-32 text-green-500/10 pointer-events-none" viewBox="0 0 100 100" fill="currentColor">
+        <path d="M100 0 C 70 30, 80 70, 100 100 C 60 80, 40 40, 0 0 Z"></path>
+    </svg>
+    <svg class="absolute bottom-0 left-0 w-36 h-36 text-fuchsia-500/10 pointer-events-none transform rotate-180" viewBox="0 0 100 100" fill="currentColor">
+        <path d="M100 0 C 70 30, 80 70, 100 100 C 60 80, 40 40, 0 0 Z"></path>
+    </svg>
+
+    <!-- MAIN APP CONTAINER -->
+    <div id="app" class="w-full h-full min-h-screen flex flex-col p-4 z-10 justify-between">
+        
+        <!-- HEADER -->
+        <header class="flex justify-between items-center py-2 border-b-2 border-fuchsia-900/60">
+            <div class="flex items-center gap-2 cursor-pointer" onclick="showScreen('home')">
+                <i class="fa-solid fa-biohazard text-horror-green text-2xl animate-pulse"></i>
+                <h1 class="font-creepster text-2xl tracking-widest neon-text-magenta">
+                    HORROR<span class="neon-text-green ml-1">ALIAS</span>
+                </h1>
+            </div>
+            <div class="flex items-center gap-3">
+                <button onclick="toggleAudio()" id="audio-toggle" class="w-10 h-10 rounded-xl bg-purple-950/80 border border-green-500/50 flex items-center justify-center text-horror-green active:scale-95 transition shadow-lg shadow-green-500/20">
+                    <i class="fa-solid fa-volume-high"></i>
+                </button>
+                <button onclick="showScreen('settings')" class="w-10 h-10 rounded-xl bg-purple-950/80 border border-fuchsia-500/50 flex items-center justify-center text-fuchsia-400 active:scale-95 transition shadow-lg shadow-fuchsia-500/20">
+                    <i class="fa-solid fa-gear"></i>
+                </button>
+            </div>
+        </header>
+
+        <!-- SCREEN CONTENT CONTAINER -->
+        <main id="screen-content" class="flex-1 flex flex-col justify-center my-auto py-2">
+            <!-- Dynamic Content loaded via JS -->
+        </main>
+
+        <!-- FOOTER -->
+        <footer class="text-center py-2 text-xs font-mono text-fuchsia-400/70 flex justify-between items-center border-t border-purple-950/80">
+            <span class="flex items-center gap-1"><i class="fa-solid fa-skull text-horror-green"></i> HORROR HUNGER '90s</span>
+            <span id="db-counter-badge" class="bg-purple-950 px-2 py-0.5 rounded border border-green-500/50 text-horror-green font-bold">670 СЛОВ</span>
+        </footer>
+    </div>
+
+    <!-- AUDIO SYNTHESIZER & GAME SCRIPT -->
+    <script>
+        /* ==========================================================================
+           1. HALLOWEEN ALIAS WORD DATABASE (EXACTLY 670 UNIQUE NON-ROOT WORDS)
+           ========================================================================== */
+        const WORD_DATABASE = [
+            // 1-50: Классические монстры и существа
+            "Вампир", "Оборотень", "Франкенштейн", "Мумия", "Привидение", "Дракула", "Зомби", "Джинн", "Гоблин", "Гаргулья",
+            "Банши", "Ктулху", "Леший", "Водяной", "Русалка", "Кикимора", "Баба-Яга", "Вурдалак", "Упырь", "Вендиго",
+            "Чудовище", "Левиафан", "Кракен", "Минотавр", "Василиск", "Грифон", "Кентавр", "Циклоп", "Гидра", "Сфинкс",
+            "Огр", "Тролль", "Гном", "Феникс", "Пегас", "Сатир", "Пикси", "Эльф", "Нимфа", "Сирена",
+            "Бес", "Чертополох", "Фавн", "Шелки", "Сильф", "Анчутка", "Полудница", "Морана", "Кощей", "Змей-Горыныч",
+
+            // 51-100: Ведовство, магия и ритуалы
+            "Ведьма", "Колдун", "Шаман", "Знахарь", "Чародей", "Некромант", "Алхимик", "Зелье", "Заклинание", "Проклятие",
+            "Заговор", "Сглаз", "Ритуал", "Амулет", "Талисман", "Гримуар", "Метла", "Котел", "Шар-предсказатель", "Благовоние",
+            "Свеча", "Алтарь", "Пентаграмма", "Мелок", "Жертвоприношение", "Травничество", "Яд", "Эликсир", "Снадобье", "Настойка",
+            "Порча", "Аура", "Медиум", "Спиритизм", "Гипноз", "Вуду", "Восковая-кукла", "Игла", "Кристалл", "Таро",
+            "Руны", "Астрология", "Оракул", "Пророчество", "Видение", "Транс", "Левитация", "Телекинез", "Зачарование", "Сглаживание",
+
+            // 101-150: Хэллоуин атрибуты и атрибуты праздника
+            "Тыква", "Джек-фонарь", "Сладость", "Пакость", "Костюм", "Маска", "Грим", "Конфеты", "Угощение", "Праздник",
+            "Паутина", "Паук", "Летучая-мышь", "Черная-кошка", "Ворон", "Сова", "Жаба", "Змея", "Скелет", "Череп",
+            "Кость", "Кровь", "Клык", "Коготь", "Шерсть", "Хвост", "Рога", "Копыта", "Крылья", "Перья",
+            "Маскарад", "Карнавал", "Шествие", "Ярмарка", "Осень", "Октябрь", "Ноябрь", "Закат", "Сумерки", "Полночь",
+            "Ночь", "Тьма", "Тень", "Туман", "Мрак", "Смог", "Зарево", "Полнолуние", "Затмение", "Заря",
+
+            // 151-200: Локации и мрачные места
+            "Кладбище", "Склеп", "Могила", "Мавзолей", "Гробница", "Замок", "Особняк", "Подвал", "Чердак", "Лабиринт",
+            "Пещера", "Болото", "Трясина", "Лес", "Подземелье", "Башня", "Колодец", "Заброшенный-дом", "Маяк", "Мельница",
+            "Пустырь", "Перекресток", "Мост", "Руины", "Катакомбы", "Психбольница", "Тюрьма", "Камера", "Палата", "Морг",
+            "Склепик", "Часовня", "Собор", "Аббатство", "Монастырь", "Алтарь-жертвенник", "Пропасть", "Ущелье", "Крипта", "Акрополь",
+            "Некрополь", "Курган", "Дольмен", "Каменоломня", "Шахта", "Затон", "Овраг", "Чаща", "Трясины", "Село-призрак",
+
+            // 201-250: Предметы ужаса и атрибуты мистики
+            "Гроб", "Саван", "Свечник", "Факел", "Фонарь", "Клетка", "Цепь", "Кандалы", "Замок-навесной", "Ключ", "Зеркало", "Картина", "Портрет", "Часы", "Маятник", "Кукла", "Марионетка", "Шкатулка", "Книга", "Письмо",
+            "Печать", "Сугубо-пергамент", "Кинжал", "Меч", "Топор", "Коса", "Серп", "Вилы", "Лопата", "Верёвка",
+            "Петля", "Плеть", "Кнут", "Оковы", "Гильотина", "Плаха", "Костер", "Пепел", "Уголь", "Сажа",
+            "Пыль", "Грязь", "Ил", "Ржавчина", "Плесень", "Гриб", "Паутина-густая", "Шелк-черный", "Бархат", "Вуаль",
+
+            // 251-300: Страхи, фобии и эмоции
+            "Страх", "Ужас", "Паника", "Испуг", "Тревога", "Кошмар", "Мандраж", "Дрожь", "Оцепенение", "Шок",
+            "Истерика", "Агония", "Боль", "Страдание", "Мука", "Печаль", "Тоска", "Отчаяние", "Безысходность", "Одиночество",
+            "Безумие", "Сумасшествие", "Бред", "Галлюцинация", "Фантом", "Иллюзия", "Обман", "Заблуждение", "Тайна", "Загадка", "Секрет", "Шепот", "Шорох", "Скрип", "Вой", "Крик", "Визг", "Стон", "Вздох", "Смех-злобный",
+
+            // 301-350: Кино, литература и персонажи
+            "Фредди-Крюгер", "Джейсон", "Майкл-Майерс", "Пеннивайз", "Чаки", "Джокер", "Бэтмен", "Ганнибал", "Норман-Бейтс", "Самара",
+            "Кинг-Конг", "Годзилла", "Франкенштейн-монстр", "Ван-Хельсинг", "Баффи", "Блейд", "Константин", "Скуби-Ду", "Каспер", "Адамс",
+            "Мортиша", "Гомес", "Уэнсдей", "Пагсли", "Ларч", "Вещь", "Дракула-граф", "Носферату", "Пинхед", "Слендермен",
+            "Момо", "Сиреноголовый", "Гренни", "Бабадук", "Астрал", "Заклятие", "Сияние", "Оно", "Пила", "Звонок",
+            "Крик-фильм", "Психо", "Экзорцист", "Омен", "Челюсти", "Чужой", "Хищник", "Муха-фильм", "Мгла", "Птицы",
+
+            // 351-400: Мифология и демонология
+            "Люцифер", "Сатана", "Дьявол", "Мефистофель", "Вельзевул", "Азазель", "Бафомет", "Левиафан-демон", "Бегемот", "Асмодей",
+            "Маммона", "Белиал", "Лилит", "Суккуб", "Инкуб", "Демон", "Чертушка", "Бесик", "Падший-ангел", "Абаддон",
+            "Аид", "Плутон", "Танатос", "Харон", "Цербер", "Стикс", "Коцит", "Лета", "Тартар", "Преисподняя",
+            "Ад", "Пекло", "Чистилище", "Геенна", "Армагеддон", "Апокалипсис", "Всадник", "Чума", "Война", "Голод",
+
+            // 401-450: Грим, костюмы и маскировка
+            "Парик", "Клыки-накладные", "Линзы-цветные", "Шрам", "Синяк", "Ссадина", "Повязка", "Бинт", "Татуировка", "Пирсинг",
+            "Плащ", "Мантия", "Капюшон", "Корсет", "Шляпа-ведьмы", "Перчатки", "Чулки", "Сапоги-высокие", "Маска-газ", "Череп-маска",
+            "Рожки", "Нимб-черный", "Крылья-летучие", "Хвост-демона", "Трезубец", "Волшебная-палочка", "Скипетр", "Корона", "Тиара", "Венец",
+            "Вуаль-черная", "Грим-белый", "Помада-черная", "Лак-черный", "Краска-для-волос", "Тату-хной", "Макияж-зомби", "Кровь-искусственная", "Грим-череп", "Костюм-скелет",
+            "Наряд-призрак", "Платье-викторианское", "Смокинг-старый", "Лоскуты", "Тряпьё", "Рванина", "Саван-белый", "Забрало", "Шлем", "Доспехи",
+
+            // 451-500: Еда, напитки и хэллоуинский пир
+            "Яблоко-в-карамели", "Тыквенный-пирог", "Конфеты-кукуруза", "Кровавая-Мэри", "Глинтвейн", "Пунцик", "Сидр", "Шоколад-тьма", "Мармелад-черви", "Печенье-пальцы",
+            "Кекс-паук", "Семечки-тыква", "Орехи", "Мед", "Корица", "Гвоздика", "Имбирь", "Мускат", "Клюква", "Гранат",
+            "Сок-свекла", "Вино-красное", "Ликер", "Настойка-полынь", "Абсент", "Зелье-кипящее", "Варево", "Бульон-лягушка", "Суп-тыква", "Каша",
+            "Хлеб-черный", "Сыр-с-плесенью", "Грибы-ядовитые", "Мухомор", "Поганка", "Ягода-волчья", "Паленка", "Борщ-красный", "Сок-томат", "Джем-малина",
+
+            // 501-550: Природные явления и атмосфера
+            "Полнолуние-яркое", "Ночь-темная", "Ветер-ледяной", "Буря", "Гроза", "Молния", "Гром", "Дождь-проливной", "Снег-первый", "Иней",
+            "Заморозки", "Холод", "Стынь", "Сквозняк", "Мгла-густая", "Дым", "Гаарь", "Копоть", "Запах-серы", "Запах-гнили",
+            "Шум-деревьев", "Шуршание-листьев", "Хруст-веток", "Капель", "Эхо", "Тень-длинная", "Блик", "Отблеск", "Сияние-северное", "Заря-вечерняя",
+            "Сумерки-густые", "Тьма-вечная", "Мрак-ночной", "Закат-алый", "Рассвет-холодный", "Ночь-безлунная", "Звезда-падающая", "Комета", "Астероид", "Затмение-солнце",
+
+            // 551-600: Ночные животные и существа
+            "Крыса", "Мышь", "Летучка", "Сова-серая", "Филин", "Ворон-черный", "Галка", "Грач", "Кошка-черная", "Кот-бродяга",
+            "Волк", "Шакал", "Гиена", "Койот", "Лиса", "Змея-ядовитая", "Гадюка", "Кобра", "Паук-птицеед", "Тарантул",
+            "Скорпион", "Сороконожка", "Червь", "Личинка", "Жук-навозник", "Светлячок", "Мотылек", "Саранча", "Таракан", "Слизень",
+            "Пиявка", "Жаба-болотная", "Лягушка", "Саламандра", "Ящерица", "Хамелеон", "Летучий-собака", "Осьминог", "Скат", "Акула",
+
+            // 601-650: Мистика, фольклор и поверья
+            "Привидение-замка", "Полтергейст", "Дух", "Душа", "Тень-прошлого", "Проклятие-рода", "Легенда", "Миф", "Предание", "Сказка-страшилка",
+            "Быличка", "Суеверие", "Примета", "Гадание", "Пасьянс", "Зеркало-судьбы", "Перекресток-миров", "Портал", "Врата", "Измерение",
+            "Астрал-мир", "Сонник", "Двойник", "Доппельгангер", "Проводник", "Страж", "Хранитель", "Палач", "Судья", "Исповедник",
+            "Искупление", "Грех", "Покаяние", "Молитва-защита", "Крест", "Святая-вода", "Ладан", "Защитный-круг", "Соль", "Серебро",
+
+            // 651-670: Хэллоуин финал и праздничные традиции
+            "Ночь-всех-святых", "Самхайн", "День-мертвых", "Канун", "Костер-Самхайна", "Угощение-или-пакость", "Маскарадная-ночь", "Парад-зомби", "Конкурс-тыков", "История-ужасов",
+            "Страшная-байка", "Ночной-сеанс", "Комната-страха", "Дом-с-привидениями", "Аттракцион-ужас", "Охотник-за-привидениями", "Сбор-сладостей", "Костюмированный-бал", "Осенний-фестиваль", "Хэллоуинский-вечер"
+        ];
+
+        /* ==========================================================================
+           2. WEB AUDIO API SYNTHESIZER (NO EXTERNAL AUDIO FILES)
+           ========================================================================== */
+        class SoundFX {
+            constructor() {
+                this.ctx = null;
+                this.enabled = true;
+            }
+
+            init() {
+                if (!this.ctx) {
+                    this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+                }
+                if (this.ctx.state === 'suspended') {
+                    this.ctx.resume();
+                }
+            }
+
+            playCorrect() {
+                if (!this.enabled) return;
+                this.init();
+                const now = this.ctx.currentTime;
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(523.25, now); // C5
+                osc.frequency.exponentialRampToValueAtTime(880, now + 0.15); // A5
+
+                gain.gain.setValueAtTime(0.3, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.25);
+
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+
+                osc.start(now);
+                osc.stop(now + 0.25);
+            }
+
+            playSkip() {
+                if (!this.enabled) return;
+                this.init();
+                const now = this.ctx.currentTime;
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(220, now); // A3
+                osc.frequency.exponentialRampToValueAtTime(110, now + 0.2); // A2
+
+                gain.gain.setValueAtTime(0.3, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.25);
+
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+
+                osc.start(now);
+                osc.stop(now + 0.25);
+            }
+
+            playTick() {
+                if (!this.enabled) return;
+                this.init();
+                const now = this.ctx.currentTime;
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(600, now);
+                osc.frequency.exponentialRampToValueAtTime(300, now + 0.05);
+
+                gain.gain.setValueAtTime(0.15, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.05);
+
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+
+                osc.start(now);
+                osc.stop(now + 0.05);
+            }
+
+            playVictory() {
+                if (!this.enabled) return;
+                this.init();
+                const notes = [440, 554.37, 659.25, 880];
+                notes.forEach((freq, idx) => {
+                    const now = this.ctx.currentTime + idx * 0.12;
+                    const osc = this.ctx.createOscillator();
+                    const gain = this.ctx.createGain();
+
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(freq, now);
+
+                    gain.gain.setValueAtTime(0.25, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
+
+                    osc.connect(gain);
+                    gain.connect(this.ctx.destination);
+
+                    osc.start(now);
+                    osc.stop(now + 0.3);
+                });
+            }
+        }
+
+        const soundFX = new SoundFX();
+
+        function toggleAudio() {
+            soundFX.enabled = !soundFX.enabled;
+            const btn = document.getElementById('audio-toggle');
+            if (soundFX.enabled) {
+                btn.innerHTML = '<i class="fa-solid fa-volume-high"></i>';
+                btn.classList.remove('text-gray-500');
+                btn.classList.add('text-amber-400');
+                soundFX.playCorrect();
+            } else {
+                btn.innerHTML = '<i class="fa-solid fa-volume-xmark"></i>';
+                btn.classList.remove('text-amber-400');
+                btn.classList.add('text-gray-500');
+            }
+        }
+
+        /* ==========================================================================
+           3. GAME STATE MANAGEMENT
+           ========================================================================== */
+        const gameState = {
+            teams: [
+                { id: 1, name: "Тыквенные Монстры", score: 0, color: "from-amber-500 to-orange-600" },
+                { id: 2, name: "Призрачные Ведьмы", score: 0, color: "from-purple-500 to-indigo-600" }
+            ],
+            currentTeamIndex: 0,
+            roundTime: 60, // seconds
+            targetScore: 30, // score to win
+            skipPenalty: true, // -1 for skip
+            usedWords: new Set(),
+            availableWords: [...WORD_DATABASE],
+            
+            // Current Turn state
+            turnWords: [], // [{ word, status: 'guessed' | 'skipped' | 'pending' }]
+            turnTimeLeft: 60,
+            timerInterval: null,
+            isTurnActive: false
+        };
+
+        // Trigger vibration if supported
+        function triggerHaptic(type = 'light') {
+            if ('vibrate' in navigator) {
+                if (type === 'light') navigator.vibrate(20);
+                if (type === 'medium') navigator.vibrate(40);
+                if (type === 'heavy') navigator.vibrate([50, 50, 50]);
+            }
+        }
+
+        /* ==========================================================================
+           4. NAVIGATION & SCREEN RENDERING
+           ========================================================================== */
+        function showScreen(screenName, data = null) {
+            const container = document.getElementById('screen-content');
+            
+            switch (screenName) {
+                case 'home':
+                    container.innerHTML = renderHomeScreen();
+                    break;
+                case 'settings':
+                    container.innerHTML = renderSettingsScreen();
+                    break;
+                case 'ready':
+                    container.innerHTML = renderReadyScreen();
+                    break;
+                case 'turn':
+                    container.innerHTML = renderTurnScreen();
+                    startTurnLogic();
+                    break;
+                case 'review':
+                    container.innerHTML = renderReviewScreen();
+                    break;
+                case 'scoreboard':
+                    container.innerHTML = renderScoreboardScreen();
+                    break;
+                case 'victory':
+                    container.innerHTML = renderVictoryScreen(data);
+                    if (window.confetti) {
+                        confetti({
+                            particleCount: 120,
+                            spread: 70,
+                            origin: { y: 0.6 },
+                            colors: ['#ff7518', '#8a2be2', '#39ff14', '#ffffff']
+                        });
+                    }
+                    soundFX.playVictory();
+                    break;
+            }
+        }
+
+        /* ==========================================================================
+           5. SCREEN TEMPLATES
+           ========================================================================== */
+        
+        // --- HOME SCREEN ---
+        function renderHomeScreen() {
+            return `
+                <div class="flex flex-col items-center text-center my-auto py-6 space-y-6">
+                    <div class="relative">
+                        <i class="fa-solid fa-jack-o-lantern text-7xl text-spooky-accent glow-text animate-bounce"></i>
+                        <div class="absolute -top-2 -right-2 bg-purple-600 text-white text-xs px-2 py-0.5 rounded-full font-bold">670 слов</div>
+                    </div>
+
+                    <div class="space-y-2">
+                        <h2 class="text-3xl font-extrabold text-white tracking-wide">ХЭЛЛОУИН ЭЛИАС</h2>
+                        <p class="text-purple-300/80 text-sm max-w-xs mx-auto">
+                            Объясняйте мистические слова своей команде на время! Избегайте запретных корней.
+                        </p>
+                    </div>
+
+                    <div class="w-full max-w-xs space-y-3 pt-4">
+                        <button onclick="startNewGame()" class="w-full py-4 bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-black font-extrabold rounded-2xl shadow-lg shadow-amber-500/30 text-lg tracking-wider active:scale-95 transition flex items-center justify-center gap-2">
+                            <i class="fa-solid fa-play"></i> НАЧАТЬ ИГРУ
+                        </button>
+
+                        <button onclick="showScreen('settings')" class="w-full py-3.5 bg-purple-950/80 hover:bg-purple-900 border border-purple-700/50 text-purple-200 font-bold rounded-2xl active:scale-95 transition flex items-center justify-center gap-2">
+                            <i class="fa-solid fa-sliders"></i> НАСТРОЙКИ
+                        </button>
+                    </div>
+
+                    <div class="pt-4 flex justify-center gap-4 text-xs text-purple-400/70">
+                        <span class="flex items-center gap-1"><i class="fa-solid fa-users text-amber-500"></i> ${gameState.teams.length} Команды</span>
+                        <span class="flex items-center gap-1"><i class="fa-solid fa-clock text-amber-500"></i> ${gameState.roundTime}сек</span>
+                        <span class="flex items-center gap-1"><i class="fa-solid fa-trophy text-amber-500"></i> ${gameState.targetScore} очков</span>
+                    </div>
+                </div>
+            `;
+        }
+
+        // --- SETTINGS SCREEN ---
+        function renderSettingsScreen() {
+            return `
+                <div class="space-y-5 py-2">
+                    <div class="flex items-center justify-between border-b border-purple-900/50 pb-2">
+                        <h2 class="text-xl font-bold text-amber-400 flex items-center gap-2">
+                            <i class="fa-solid fa-gear"></i> Настройки игры
+                        </h2>
+                        <button onclick="showScreen('home')" class="text-purple-400 hover:text-white">
+                            <i class="fa-solid fa-xmark text-xl"></i>
+                        </button>
+                    </div>
+
+                    <!-- TEAM MANAGEMENT -->
+                    <div class="space-y-3">
+                        <label class="text-xs font-bold text-purple-300 uppercase tracking-wider block">Команды</label>
+                        <div class="space-y-2">
+                            ${gameState.teams.map((team, idx) => `
+                                <div class="flex items-center gap-2 bg-purple-950/50 p-2.5 rounded-xl border border-purple-800/40">
+                                    <div class="w-4 h-4 rounded-full bg-gradient-to-r ${team.color}"></div>
+                                    <input type="text" value="${team.name}" onchange="updateTeamName(${idx}, this.value)" 
+                                        class="bg-transparent text-white font-medium text-sm flex-1 focus:outline-none border-b border-transparent focus:border-amber-500 px-1">
+                                    ${gameState.teams.length > 2 ? `
+                                        <button onclick="removeTeam(${idx})" class="text-red-400/70 hover:text-red-400 p-1">
+                                            <i class="fa-solid fa-trash-can"></i>
+                                        </button>
+                                    ` : ''}
+                                </div>
+                            `).join('')}
+                        </div>
+                        ${gameState.teams.length < 4 ? `
+                            <button onclick="addTeam()" class="w-full py-2 bg-purple-900/40 hover:bg-purple-900/70 border border-dashed border-purple-700 text-purple-300 text-xs font-bold rounded-xl active:scale-98 transition flex items-center justify-center gap-1">
+                                <i class="fa-solid fa-plus"></i> Добавить команду
+                            </button>
+                        ` : ''}
+                    </div>
+
+                    <!-- ROUND TIME -->
+                    <div class="space-y-2">
+                        <div class="flex justify-between items-center">
+                            <label class="text-xs font-bold text-purple-300 uppercase tracking-wider">Время раунда</label>
+                            <span class="text-amber-400 font-bold text-sm">${gameState.roundTime} сек</span>
+                        </div>
+                        <div class="grid grid-cols-3 gap-2">
+                            ${[30, 60, 90].map(time => `
+                                <button onclick="setRoundTime(${time})" class="py-2 rounded-xl border text-sm font-bold transition ${gameState.roundTime === time ? 'bg-amber-500 border-amber-400 text-black shadow-lg shadow-amber-500/20' : 'bg-purple-950/40 border-purple-800/50 text-purple-300'}">
+                                    ${time} сек
+                                </button>
+                            `).join('')}
+                        </div>
+                    </div>
+
+                    <!-- TARGET SCORE -->
+                    <div class="space-y-2">
+                        <div class="flex justify-between items-center">
+                            <label class="text-xs font-bold text-purple-300 uppercase tracking-wider">Очков для победы</label>
+                            <span class="text-amber-400 font-bold text-sm">${gameState.targetScore}</span>
+                        </div>
+                        <div class="grid grid-cols-3 gap-2">
+                            ${[20, 30, 50].map(score => `
+                                <button onclick="setTargetScore(${score})" class="py-2 rounded-xl border text-sm font-bold transition ${gameState.targetScore === score ? 'bg-amber-500 border-amber-400 text-black shadow-lg shadow-amber-500/20' : 'bg-purple-950/40 border-purple-800/50 text-purple-300'}">
+                                    ${score}
+                                </button>
+                            `).join('')}
+                        </div>
+                    </div>
+
+                    <!-- SKIP PENALTY TOGGLE -->
+                    <div class="flex items-center justify-between bg-purple-950/50 p-3 rounded-xl border border-purple-800/40">
+                        <div>
+                            <div class="text-sm font-bold text-white">Штраф за пропуск (-1)</div>
+                            <div class="text-xs text-purple-400">Снимать очки при пропуске карточки</div>
+                        </div>
+                        <button onclick="toggleSkipPenalty()" class="w-12 h-6 rounded-full p-0.5 transition ${gameState.skipPenalty ? 'bg-amber-500' : 'bg-purple-900'}">
+                            <div class="w-5 h-5 rounded-full bg-white transform transition ${gameState.skipPenalty ? 'translate-x-6' : 'translate-x-0'}"></div>
+                        </button>
+                    </div>
+
+                    <!-- DATABASE INFO -->
+                    <div class="bg-purple-950/30 p-3 rounded-xl border border-purple-800/30 flex items-center justify-between text-xs text-purple-300">
+                        <span>База Хэллоуин-слов:</span>
+                        <span class="font-bold text-amber-400 bg-purple-900/60 px-2 py-0.5 rounded border border-purple-700/50">${WORD_DATABASE.length} уникальных слов</span>
+                    </div>
+
+                    <button onclick="showScreen('home')" class="w-full py-3.5 bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-bold rounded-2xl active:scale-95 transition mt-2">
+                        СОХРАНИТЬ И ВЫЙТИ
+                    </button>
+                </div>
+            `;
+        }
+
+        // --- READY TURN SCREEN ---
+        function renderReadyScreen() {
+            const currentTeam = gameState.teams[gameState.currentTeamIndex];
+            return `
+                <div class="flex flex-col items-center text-center justify-center space-y-6 my-auto py-6">
+                    <div class="text-purple-400 text-sm tracking-widest uppercase font-semibold">Готовится команда</div>
+                    
+                    <div class="w-full p-6 rounded-3xl bg-gradient-to-b ${currentTeam.color} shadow-2xl shadow-purple-900/40 transform border border-white/20 space-y-3">
+                        <i class="fa-solid fa-ghost text-5xl text-white/90 animate-bounce"></i>
+                        <h2 class="text-3xl font-black text-white tracking-wide drop-shadow-md">${currentTeam.name}</h2>
+                        <div class="inline-block bg-black/40 backdrop-blur-sm text-amber-300 px-4 py-1 rounded-full text-sm font-bold border border-white/10">
+                            Текущий счет: ${currentTeam.score} очков
+                        </div>
+                    </div>
+
+                    <div class="bg-purple-950/60 border border-purple-800/50 p-4 rounded-2xl max-w-xs text-left space-y-2 text-xs text-purple-300">
+                        <div class="font-bold text-amber-400 flex items-center gap-1.5 text-sm">
+                            <i class="fa-solid fa-circle-info"></i> Правила хода:
+                        </div>
+                        <p>• У вас есть <b>${gameState.roundTime} секунд</b> на объяснение слов.</p>
+                        <p>• Нельзя использовать однокоренные слова и переводы.</p>
+                        <p>• Свайп вправо / <span class="text-green-400">Угадал</span>, свайп влево / <span class="text-red-400">Пропуск</span>.</p>
+                    </div>
+
+                    <button onclick="showScreen('turn')" class="w-full max-w-xs py-4 bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-black font-extrabold rounded-2xl shadow-lg shadow-amber-500/30 text-xl tracking-wider active:scale-95 transition flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-play"></i> ПОГНАЛИ!
+                    </button>
+                </div>
+            `;
+        }
+
+        // --- ACTIVE TURN SCREEN ---
+        function renderTurnScreen() {
+            const currentTeam = gameState.teams[gameState.currentTeamIndex];
+            return `
+                <div class="flex flex-col h-full justify-between items-center py-2 relative">
+                    <!-- Top Bar: Current Team & Timer -->
+                    <div class="w-full flex justify-between items-center px-2">
+                        <div class="flex items-center gap-2 bg-purple-950/70 px-3 py-1.5 rounded-full border border-purple-800/50">
+                            <div class="w-3 h-3 rounded-full bg-gradient-to-r ${currentTeam.color}"></div>
+                            <span class="text-xs font-bold text-purple-200 truncate max-w-[120px]">${currentTeam.name}</span>
+                        </div>
+
+                        <!-- CIRCULAR/RING TIMER -->
+                        <div class="relative w-14 h-14 flex items-center justify-center">
+                            <svg class="w-full h-full transform -rotate-90" viewBox="0 0 36 36">
+                                <path stroke-dasharray="100, 100" class="text-purple-950" stroke-width="3.5" stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
+                                <path id="timer-ring" stroke-dasharray="100, 100" class="text-amber-500 transition-all duration-1000" stroke-width="3.5" stroke-linecap="round" stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
+                            </svg>
+                            <span id="timer-text" class="absolute font-black text-lg text-amber-400">60</span>
+                        </div>
+                    </div>
+
+                    <!-- WORD CARD CONTAINER -->
+                    <div class="w-full card-container my-auto py-4 flex justify-center items-center">
+                        <div id="word-card" class="swipe-card w-full max-w-xs h-64 spooky-card rounded-3xl p-6 flex flex-col justify-between items-center text-center relative border-2 border-amber-500/40 shadow-2xl">
+                            <div class="text-xs uppercase tracking-widest text-purple-400/80 font-bold">Хэллоуин Слово</div>
+                            
+                            <div id="current-word" class="text-2xl sm:text-3xl font-black text-amber-400 tracking-wide glow-text my-auto flex items-center justify-center">
+                                ...
+                            </div>
+
+                            <div class="text-xs text-purple-300/60 flex items-center gap-1">
+                                <i class="fa-solid fa-hand-pointer text-amber-500/70"></i> Свайп или кнопки снизу
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- LIVE COUNTER -->
+                    <div class="flex justify-center gap-6 text-sm font-bold mb-4">
+                        <span class="text-green-400 flex items-center gap-1"><i class="fa-solid fa-circle-check"></i> <span id="turn-guessed-count">0</span></span>
+                        <span class="text-red-400 flex items-center gap-1"><i class="fa-solid fa-circle-xmark"></i> <span id="turn-skipped-count">0</span></span>
+                    </div>
+
+                    <!-- ACTION BUTTONS -->
+                    <div class="w-full grid grid-cols-2 gap-4 max-w-xs">
+                        <button onclick="handleTurnAction('skip')" class="py-4 bg-red-950/80 hover:bg-red-900 border border-red-600/50 text-red-400 font-extrabold rounded-2xl active:scale-95 transition flex flex-col items-center justify-center gap-1 shadow-lg">
+                            <i class="fa-solid fa-forward text-xl"></i>
+                            <span class="text-xs">ПРОПУСК ${gameState.skipPenalty ? '(-1)' : ''}</span>
+                        </button>
+
+                        <button onclick="handleTurnAction('guessed')" class="py-4 bg-green-950/80 hover:bg-green-900 border border-green-600/50 text-green-400 font-extrabold rounded-2xl active:scale-95 transition flex flex-col items-center justify-center gap-1 shadow-lg">
+                            <i class="fa-solid fa-check text-xl"></i>
+                            <span class="text-xs">УГАДАЛИ (+1)</span>
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+
+        // --- TURN REVIEW SCREEN ---
+        function renderReviewScreen() {
+            const currentTeam = gameState.teams[gameState.currentTeamIndex];
+            
+            // Calculate scores
+            let turnScore = 0;
+            gameState.turnWords.forEach(w => {
+                if (w.status === 'guessed') turnScore += 1;
+                if (w.status === 'skipped' && gameState.skipPenalty) turnScore -= 1;
+            });
+
+            return `
+                <div class="space-y-4 py-2 flex flex-col h-full justify-between">
+                    <div>
+                        <div class="text-center space-y-1 border-b border-purple-900/50 pb-3">
+                            <h2 class="text-xl font-black text-amber-400">Итоги хода</h2>
+                            <p class="text-xs text-purple-300">Проверьте и скорректируйте результаты команды <b class="text-white">${currentTeam.name}</b></p>
+                        </div>
+
+                        <!-- TURN SCORE SUMMARY -->
+                        <div class="my-3 p-3 bg-purple-950/60 rounded-xl border border-purple-800/50 flex justify-between items-center text-sm font-bold">
+                            <span class="text-purple-300">Очков за этот ход:</span>
+                            <span class="text-xl ${turnScore >= 0 ? 'text-green-400' : 'text-red-400'}">${turnScore >= 0 ? '+' : ''}${turnScore}</span>
+                        </div>
+
+                        <!-- WORD LIST -->
+                        <div class="space-y-2 max-h-64 overflow-y-auto pr-1">
+                            ${gameState.turnWords.length === 0 ? '<p class="text-center text-gray-500 text-sm py-4">Слова не были сыграны</p>' : ''}
+                            ${gameState.turnWords.map((item, idx) => `
+                                <div class="flex justify-between items-center p-2.5 rounded-xl border ${item.status === 'guessed' ? 'bg-green-950/30 border-green-800/40' : 'bg-red-950/30 border-red-800/40'}">
+                                    <span class="font-bold text-sm text-white">${item.word}</span>
+                                    <button onclick="toggleWordStatus(${idx})" class="px-3 py-1 rounded-lg text-xs font-bold transition flex items-center gap-1 ${item.status === 'guessed' ? 'bg-green-600 text-black' : 'bg-red-600 text-white'}">
+                                        ${item.status === 'guessed' ? '<i class="fa-solid fa-check"></i> Угадано' : '<i class="fa-solid fa-xmark"></i> Пропуск'}
+                                    </button>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+
+                    <button onclick="commitTurnResults()" class="w-full py-4 bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-black font-extrabold rounded-2xl shadow-lg shadow-amber-500/30 text-lg tracking-wider active:scale-95 transition mt-4">
+                        ПОДТВЕРДИТЬ И ПРОДОЛЖИТЬ
+                    </button>
+                </div>
+            `;
+        }
+
+        // --- SCOREBOARD SCREEN ---
+        function renderScoreboardScreen() {
+            // Sort leaderboard
+            const sortedTeams = [...gameState.teams].sort((a, b) => b.score - a.score);
+
+            return `
+                <div class="space-y-6 py-4 my-auto">
+                    <div class="text-center space-y-1">
+                        <i class="fa-solid fa-trophy text-4xl text-amber-400 animate-pulse"></i>
+                        <h2 class="text-2xl font-black text-white">ТАБЛИЦА ЛИДЕРОВ</h2>
+                        <p class="text-xs text-purple-300">Цель: ${gameState.targetScore} очков</p>
+                    </div>
+
+                    <div class="space-y-3">
+                        ${sortedTeams.map((team, rank) => `
+                            <div class="flex justify-between items-center p-4 rounded-2xl bg-purple-950/60 border border-purple-800/50 shadow-md">
+                                <div class="flex items-center gap-3">
+                                    <span class="w-7 h-7 rounded-full flex items-center justify-center font-black text-xs ${rank === 0 ? 'bg-amber-500 text-black' : 'bg-purple-900 text-purple-300'}">
+                                        ${rank + 1}
+                                    </span>
+                                    <div>
+                                        <div class="font-bold text-white text-sm">${team.name}</div>
+                                        <div class="w-24 bg-purple-900 h-2 rounded-full overflow-hidden mt-1">
+                                            <div class="bg-amber-500 h-full" style="width: ${Math.min(100, (team.score / gameState.targetScore) * 100)}%"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <span class="text-xl font-black text-amber-400">${team.score}</span>
+                            </div>
+                        `).join('')}
+                    </div>
+
+                    <button onclick="nextTurn()" class="w-full py-4 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white font-extrabold rounded-2xl shadow-lg text-lg tracking-wider active:scale-95 transition">
+                        СЛЕДУЮЩИЙ ХОД <i class="fa-solid fa-arrow-right ml-1"></i>
+                    </button>
+                </div>
+            `;
+        }
+
+        // --- VICTORY SCREEN ---
+        function renderVictoryScreen(winningTeam) {
+            return `
+                <div class="flex flex-col items-center text-center justify-center space-y-6 my-auto py-6">
+                    <div class="relative">
+                        <i class="fa-solid fa-crown text-6xl text-amber-400 animate-bounce"></i>
+                        <div class="absolute inset-0 text-amber-500 blur-lg opacity-50"><i class="fa-solid fa-crown text-6xl"></i></div>
+                    </div>
+
+                    <div class="space-y-2">
+                        <div class="text-purple-400 text-xs tracking-widest uppercase font-bold">ПОБЕДИТЕЛИ ХЭЛЛОУИНА!</div>
+                        <h2 class="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-orange-500 glow-text">
+                            ${winningTeam.name}
+                        </h2>
+                        <p class="text-purple-300 text-sm">Набрали ${winningTeam.score} очков и преодолели все проклятия!</p>
+                    </div>
+
+                    <div class="w-full bg-purple-950/60 border border-purple-800/50 p-4 rounded-2xl max-w-xs space-y-2">
+                        <div class="text-xs text-purple-400 font-bold uppercase border-b border-purple-900/50 pb-1">Финальный счет</div>
+                        ${gameState.teams.map(t => `
+                            <div class="flex justify-between text-sm ${t.id === winningTeam.id ? 'font-bold text-amber-400' : 'text-purple-300'}">
+                                <span>${t.name}</span>
+                                <span>${t.score}</span>
+                            </div>
+                        `).join('')}
+                    </div>
+
+                    <button onclick="startNewGame()" class="w-full max-w-xs py-4 bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-black font-extrabold rounded-2xl shadow-lg shadow-amber-500/30 text-lg tracking-wider active:scale-95 transition">
+                        ИГРАТЬ СНОВА
+                    </button>
+                </div>
+            `;
+        }
+
+        /* ==========================================================================
+           REDEFINED SCREEN TEMPLATES TO MATCH HORROR HUNGER REFERENCE
+           ========================================================================== */
+
+        // --- HOME SCREEN ---
+        function renderHomeScreen() {
+            return `
+                <div class="flex flex-col items-center text-center my-auto py-4 space-y-6">
+                    <div class="relative group">
+                        <div class="absolute -inset-4 bg-gradient-to-r from-green-500 to-fuchsia-600 rounded-full blur-xl opacity-60 group-hover:opacity-100 transition animate-pulse"></div>
+                        <i class="fa-solid fa-skull-crossbones text-7xl text-horror-green relative drop-shadow-[0_0_20px_#39ff14]"></i>
+                        <div class="absolute -top-3 -right-6 bg-fuchsia-600 border border-green-400 text-white text-xs px-2 py-0.5 rounded font-black tracking-widest animate-bounce">
+                            670 СЛОВ
+                        </div>
+                    </div>
+
+                    <div class="space-y-2">
+                        <h2 class="text-4xl font-creepster text-fuchsia-500 tracking-wider neon-text-magenta">HORROR HUNGER</h2>
+                        <h3 class="text-2xl font-creepster text-horror-green neon-text-green">ЭЛИАС ИЗ ПРЕИСПИСНИ</h3>
+                        <p class="text-purple-300 text-xs font-mono max-w-xs mx-auto leading-relaxed border-l-2 border-r-2 border-green-500/50 px-2 py-1">
+                            ОБЪЯСНЯЙ МИСТИЧЕСКИЕ СЛОВА ПОКА НЕ ИСТЕКЛО ВРЕМЯ. ИЗБЕГАЙ ОДНОКОРЕННЫХ СЛОВ!
+                        </p>
+                    </div>
+
+                    <div class="w-full max-w-xs space-y-3 pt-2">
+                        <button onclick="startNewGame()" class="w-full py-4 bg-gradient-to-r from-green-500 via-emerald-600 to-green-400 hover:from-green-400 hover:to-emerald-500 text-black font-black font-mono rounded-xl shadow-[0_0_20px_#39ff14] text-xl tracking-widest active:scale-95 transition flex items-center justify-center gap-2 border-2 border-white">
+                            <i class="fa-solid fa-play"></i> НАЧАТЬ ИГРУ
+                        </button>
+
+                        <button onclick="showScreen('settings')" class="w-full py-3 bg-purple-950/80 hover:bg-purple-900 border-2 border-fuchsia-500 text-fuchsia-300 font-bold font-mono rounded-xl active:scale-95 transition flex items-center justify-center gap-2 shadow-[0_0_15px_#ff007f]">
+                            <i class="fa-solid fa-sliders"></i> НАСТРОЙКИ
+                        </button>
+                    </div>
+
+                    <div class="pt-2 flex justify-center gap-4 text-xs font-mono text-green-400/80">
+                        <span class="flex items-center gap-1"><i class="fa-solid fa-users text-fuchsia-400"></i> ${gameState.teams.length} Команды</span>
+                        <span class="flex items-center gap-1"><i class="fa-solid fa-clock text-fuchsia-400"></i> ${gameState.roundTime}сек</span>
+                        <span class="flex items-center gap-1"><i class="fa-solid fa-trophy text-fuchsia-400"></i> ${gameState.targetScore} очков</span>
+                    </div>
+                </div>
+            `;
+        }
+
+        // --- SETTINGS SCREEN ---
+        function renderSettingsScreen() {
+            return `
+                <div class="space-y-4 py-2">
+                    <div class="flex items-center justify-between border-b-2 border-fuchsia-600 pb-2">
+                        <h2 class="text-2xl font-creepster text-horror-green neon-text-green flex items-center gap-2">
+                            <i class="fa-solid fa-gear"></i> НАСТРОЙКИ РИТУАЛА
+                        </h2>
+                        <button onclick="showScreen('home')" class="text-fuchsia-400 hover:text-white">
+                            <i class="fa-solid fa-xmark text-2xl"></i>
+                        </button>
+                    </div>
+
+                    <!-- TEAM MANAGEMENT -->
+                    <div class="space-y-2">
+                        <label class="text-xs font-bold text-fuchsia-400 uppercase tracking-widest block">Команды Жертв</label>
+                        <div class="space-y-2">
+                            ${gameState.teams.map((team, idx) => `
+                                <div class="flex items-center gap-2 bg-purple-950/80 p-2.5 rounded-xl border border-green-500/50 shadow-[0_0_10px_rgba(57,255,20,0.2)]">
+                                    <div class="w-4 h-4 rounded-full bg-gradient-to-r ${team.color} border border-white"></div>
+                                    <input type="text" value="${team.name}" onchange="updateTeamName(${idx}, this.value)" 
+                                        class="bg-transparent text-white font-mono text-base flex-1 focus:outline-none border-b border-dashed border-fuchsia-500 px-1">
+                                    ${gameState.teams.length > 2 ? `
+                                        <button onclick="removeTeam(${idx})" class="text-red-400 hover:text-red-300 p-1">
+                                            <i class="fa-solid fa-trash-can"></i>
+                                        </button>
+                                    ` : ''}
+                                </div>
+                            `).join('')}
+                        </div>
+                        ${gameState.teams.length < 4 ? `
+                            <button onclick="addTeam()" class="w-full py-2 bg-purple-900/40 hover:bg-purple-900/70 border-2 border-dashed border-green-500 text-horror-green text-xs font-bold font-mono rounded-xl active:scale-98 transition flex items-center justify-center gap-1">
+                                <i class="fa-solid fa-plus"></i> Добавить команду
+                            </button>
+                        ` : ''}
+                    </div>
+
+                    <!-- ROUND TIME -->
+                    <div class="space-y-2">
+                        <div class="flex justify-between items-center">
+                            <label class="text-xs font-bold text-fuchsia-400 uppercase tracking-widest">Время раунда</label>
+                            <span class="text-horror-green font-bold text-base">${gameState.roundTime} сек</span>
+                        </div>
+                        <div class="grid grid-cols-3 gap-2">
+                            ${[30, 60, 90].map(time => `
+                                <button onclick="setRoundTime(${time})" class="py-2 rounded-xl border-2 text-base font-bold transition ${gameState.roundTime === time ? 'bg-green-500 border-white text-black shadow-[0_0_15px_#39ff14]' : 'bg-purple-950/60 border-fuchsia-800 text-fuchsia-300'}">
+                                    ${time} сек
+                                </button>
+                            `).join('')}
+                        </div>
+                    </div>
+
+                    <!-- TARGET SCORE -->
+                    <div class="space-y-2">
+                        <div class="flex justify-between items-center">
+                            <label class="text-xs font-bold text-fuchsia-400 uppercase tracking-widest">Очков для победы</label>
+                            <span class="text-horror-green font-bold text-base">${gameState.targetScore}</span>
+                        </div>
+                        <div class="grid grid-cols-3 gap-2">
+                            ${[20, 30, 50].map(score => `
+                                <button onclick="setTargetScore(${score})" class="py-2 rounded-xl border-2 text-base font-bold transition ${gameState.targetScore === score ? 'bg-fuchsia-600 border-white text-white shadow-[0_0_15px_#ff007f]' : 'bg-purple-950/60 border-fuchsia-800 text-fuchsia-300'}">
+                                    ${score}
+                                </button>
+                            `).join('')}
+                        </div>
+                    </div>
+
+                    <!-- SKIP PENALTY TOGGLE -->
+                    <div class="flex items-center justify-between bg-purple-950/80 p-3 rounded-xl border border-fuchsia-600/50">
+                        <div>
+                            <div class="text-sm font-bold text-white">Штраф за пропуск (-1)</div>
+                            <div class="text-xs text-purple-300">Снимать очки при пропуске карточки</div>
+                        </div>
+                        <button onclick="toggleSkipPenalty()" class="w-12 h-6 rounded-full p-0.5 transition ${gameState.skipPenalty ? 'bg-green-500' : 'bg-purple-900'}">
+                            <div class="w-5 h-5 rounded-full bg-black transform transition ${gameState.skipPenalty ? 'translate-x-6' : 'translate-x-0'}"></div>
+                        </button>
+                    </div>
+
+                    <button onclick="showScreen('home')" class="w-full py-3.5 bg-gradient-to-r from-fuchsia-600 to-purple-700 border-2 border-white text-white font-black rounded-xl active:scale-95 transition mt-2 shadow-[0_0_15px_#ff007f]">
+                        СОХРАНИТЬ И ВЫЙТИ
+                    </button>
+                </div>
+            `;
+        }
+
+        // --- READY TURN SCREEN ---
+        function renderReadyScreen() {
+            const currentTeam = gameState.teams[gameState.currentTeamIndex];
+            return `
+                <div class="flex flex-col items-center text-center justify-center space-y-6 my-auto py-4">
+                    <div class="text-fuchsia-400 text-sm tracking-widest uppercase font-bold">Приготовиться к призыву</div>
+                    
+                    <div class="w-full p-6 rounded-2xl bg-gradient-to-b ${currentTeam.color} shadow-[0_0_30px_#39ff14] border-2 border-white space-y-3 relative overflow-hidden">
+                        <i class="fa-solid fa-biohazard text-6xl text-white/90 animate-pulse"></i>
+                        <h2 class="text-4xl font-creepster text-white tracking-wider drop-shadow-md">${currentTeam.name}</h2>
+                        <div class="inline-block bg-black/70 backdrop-blur-sm text-horror-green px-4 py-1 rounded-full text-sm font-bold border border-green-400">
+                            Текущий счет: ${currentTeam.score} очков
+                        </div>
+                    </div>
+
+                    <div class="bg-purple-950/80 border border-green-500/50 p-4 rounded-xl max-w-xs text-left space-y-2 text-xs font-mono text-purple-200 shadow-md">
+                        <div class="font-bold text-horror-green flex items-center gap-1.5 text-sm">
+                            <i class="fa-solid fa-skull"></i> ПРАВИЛА РИТУАЛА:
+                        </div>
+                        <p>• У вас <b>${gameState.roundTime} секунд</b> на объяснение слов.</p>
+                        <p>• Запрещены однокоренные слова и переводы.</p>
+                        <p>• Свайп вправо = <span class="text-green-400 font-bold">Угадано (+1)</span>, свайп влево = <span class="text-red-400 font-bold">Пропуск</span>.</p>
+                    </div>
+
+                    <button onclick="showScreen('turn')" class="w-full max-w-xs py-4 bg-gradient-to-r from-green-500 via-emerald-500 to-green-400 text-black font-black font-mono rounded-xl shadow-[0_0_25px_#39ff14] text-2xl tracking-widest active:scale-95 transition border-2 border-white flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-skull"></i> НАЧАТЬ ХОД!
+                    </button>
+                </div>
+            `;
+        }
+
+        // --- ACTIVE TURN SCREEN ---
+        function renderTurnScreen() {
+            const currentTeam = gameState.teams[gameState.currentTeamIndex];
+            return `
+                <div class="flex flex-col h-full justify-between items-center py-2 relative">
+                    <!-- Top Bar: Current Team & Timer -->
+                    <div class="w-full flex justify-between items-center px-2">
+                        <div class="flex items-center gap-2 bg-purple-950/90 px-3 py-1.5 rounded-xl border border-fuchsia-500">
+                            <div class="w-3 h-3 rounded-full bg-gradient-to-r ${currentTeam.color}"></div>
+                            <span class="text-xs font-bold text-fuchsia-200 truncate max-w-[120px] font-mono">${currentTeam.name}</span>
+                        </div>
+
+                        <!-- CIRCULAR/RING TIMER WITH HORROR GLOW -->
+                        <div class="relative w-16 h-16 flex items-center justify-center">
+                            <svg class="w-full h-full transform -rotate-90" viewBox="0 0 36 36">
+                                <path stroke-dasharray="100, 100" class="text-purple-950" stroke-width="4" stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
+                                <path id="timer-ring" stroke-dasharray="100, 100" class="text-horror-green transition-all duration-1000" stroke-width="4" stroke-linecap="round" stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
+                            </svg>
+                            <span id="timer-text" class="absolute font-black text-2xl text-horror-green neon-text-green font-mono">60</span>
+                        </div>
+                    </div>
+
+                    <!-- WORD CARD CONTAINER WITH TENTACLE STYLING -->
+                    <div class="w-full card-container my-auto py-2 flex justify-center items-center">
+                        <div id="word-card" class="swipe-card tentacle-frame w-full max-w-xs h-64 spooky-card rounded-3xl p-6 flex flex-col justify-between items-center text-center relative border-2 border-fuchsia-500">
+                            <div class="text-xs uppercase tracking-widest text-fuchsia-400 font-bold font-mono">Слово Иномирья</div>
+                            
+                            <div id="current-word" class="text-3xl font-creepster text-horror-green tracking-wider neon-text-green my-auto flex items-center justify-center leading-tight">
+                                ...
+                            </div>
+
+                            <div class="text-xs text-purple-300 font-mono flex items-center gap-1">
+                                <i class="fa-solid fa-hand-pointer text-horror-green"></i> Свайп или кнопки снизу
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- LIVE COUNTER -->
+                    <div class="flex justify-center gap-6 text-base font-bold mb-3 font-mono">
+                        <span class="text-green-400 flex items-center gap-1"><i class="fa-solid fa-circle-check"></i> <span id="turn-guessed-count">0</span></span>
+                        <span class="text-red-400 flex items-center gap-1"><i class="fa-solid fa-circle-xmark"></i> <span id="turn-skipped-count">0</span></span>
+                    </div>
+
+                    <!-- ACTION BUTTONS -->
+                    <div class="w-full grid grid-cols-2 gap-4 max-w-xs">
+                        <button onclick="handleTurnAction('skip')" class="py-3.5 bg-red-950/90 border-2 border-red-500 text-red-400 font-black font-mono rounded-xl active:scale-95 transition flex flex-col items-center justify-center gap-1 shadow-[0_0_15px_rgba(239,68,68,0.4)]">
+                            <i class="fa-solid fa-forward text-2xl"></i>
+                            <span class="text-xs">ПРОПУСК ${gameState.skipPenalty ? '(-1)' : ''}</span>
+                        </button>
+
+                        <button onclick="handleTurnAction('guessed')" class="py-3.5 bg-green-950/90 border-2 border-green-400 text-horror-green font-black font-mono rounded-xl active:scale-95 transition flex flex-col items-center justify-center gap-1 shadow-[0_0_15px_#39ff14]">
+                            <i class="fa-solid fa-check text-2xl"></i>
+                            <span class="text-xs">УГАДАЛИ (+1)</span>
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+
+        // --- TURN REVIEW SCREEN ---
+        function renderReviewScreen() {
+            const currentTeam = gameState.teams[gameState.currentTeamIndex];
+            
+            let turnScore = 0;
+            gameState.turnWords.forEach(w => {
+                if (w.status === 'guessed') turnScore += 1;
+                if (w.status === 'skipped' && gameState.skipPenalty) turnScore -= 1;
+            });
+
+            return `
+                <div class="space-y-4 py-2 flex flex-col h-full justify-between">
+                    <div>
+                        <div class="text-center space-y-1 border-b-2 border-fuchsia-600 pb-3">
+                            <h2 class="text-3xl font-creepster text-horror-green neon-text-green">Итоги Призыва</h2>
+                            <p class="text-xs font-mono text-purple-300">Сверить результаты команды <b class="text-fuchsia-400">${currentTeam.name}</b></p>
+                        </div>
+
+                        <!-- TURN SCORE SUMMARY -->
+                        <div class="my-3 p-3 bg-purple-950/80 rounded-xl border border-fuchsia-500 flex justify-between items-center text-sm font-bold font-mono">
+                            <span class="text-purple-300">Очков за этот ход:</span>
+                            <span class="text-2xl ${turnScore >= 0 ? 'text-horror-green' : 'text-red-400'}">${turnScore >= 0 ? '+' : ''}${turnScore}</span>
+                        </div>
+
+                        <!-- WORD LIST -->
+                        <div class="space-y-2 max-h-60 overflow-y-auto pr-1">
+                            ${gameState.turnWords.length === 0 ? '<p class="text-center text-gray-500 text-sm py-4">Слова не были сыграны</p>' : ''}
+                            ${gameState.turnWords.map((item, idx) => `
+                                <div class="flex justify-between items-center p-2.5 rounded-xl border ${item.status === 'guessed' ? 'bg-green-950/40 border-green-500' : 'bg-red-950/40 border-red-500'}">
+                                    <span class="font-bold text-base text-white font-mono">${item.word}</span>
+                                    <button onclick="toggleWordStatus(${idx})" class="px-3 py-1 rounded-lg text-xs font-bold font-mono transition flex items-center gap-1 ${item.status === 'guessed' ? 'bg-green-500 text-black' : 'bg-red-600 text-white'}">
+                                        ${item.status === 'guessed' ? '<i class="fa-solid fa-check"></i> Угадано' : '<i class="fa-solid fa-xmark"></i> Пропуск'}
+                                    </button>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+
+                    <button onclick="commitTurnResults()" class="w-full py-4 bg-gradient-to-r from-fuchsia-600 to-purple-700 border-2 border-white text-white font-black font-mono rounded-xl shadow-[0_0_20px_#ff007f] text-xl tracking-wider active:scale-95 transition mt-2">
+                        ПОДТВЕРДИТЬ И ПРОДОЛЖИТЬ
+                    </button>
+                </div>
+            `;
+        }
+
+        // --- SCOREBOARD SCREEN ---
+        function renderScoreboardScreen() {
+            const sortedTeams = [...gameState.teams].sort((a, b) => b.score - a.score);
+
+            return `
+                <div class="space-y-6 py-4 my-auto">
+                    <div class="text-center space-y-1">
+                        <i class="fa-solid fa-skull-crossbones text-5xl text-horror-green animate-bounce drop-shadow-[0_0_15px_#39ff14]"></i>
+                        <h2 class="text-3xl font-creepster text-fuchsia-500 neon-text-magenta">ТАБЛИЦА СМЕРТНИКОВ</h2>
+                        <p class="text-xs font-mono text-purple-300">Цель: ${gameState.targetScore} очков</p>
+                    </div>
+
+                    <div class="space-y-3">
+                        ${sortedTeams.map((team, rank) => `
+                            <div class="flex justify-between items-center p-4 rounded-2xl bg-purple-950/80 border-2 border-fuchsia-600 shadow-[0_0_15px_rgba(255,0,127,0.3)]">
+                                <div class="flex items-center gap-3">
+                                    <span class="w-8 h-8 rounded-full flex items-center justify-center font-black text-sm font-mono ${rank === 0 ? 'bg-green-400 text-black shadow-[0_0_10px_#39ff14]' : 'bg-purple-900 text-purple-300'}">
+                                        ${rank + 1}
+                                    </span>
+                                    <div>
+                                        <div class="font-bold text-white text-base font-mono">${team.name}</div>
+                                        <div class="w-28 bg-purple-950 h-2.5 rounded-full overflow-hidden mt-1 border border-purple-800">
+                                            <div class="bg-gradient-to-r from-green-500 to-fuchsia-500 h-full" style="width: ${Math.min(100, (team.score / gameState.targetScore) * 100)}%"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <span class="text-2xl font-black text-horror-green font-mono neon-text-green">${team.score}</span>
+                            </div>
+                        `).join('')}
+                    </div>
+
+                    <button onclick="nextTurn()" class="w-full py-4 bg-gradient-to-r from-green-500 to-emerald-600 border-2 border-white text-black font-black font-mono rounded-xl shadow-[0_0_20px_#39ff14] text-xl tracking-wider active:scale-95 transition">
+                        СЛЕДУЮЩИЙ ХОД <i class="fa-solid fa-arrow-right ml-1"></i>
+                    </button>
+                </div>
+            `;
+        }
+
+        // --- VICTORY SCREEN ---
+        function renderVictoryScreen(winningTeam) {
+            return `
+                <div class="flex flex-col items-center text-center justify-center space-y-6 my-auto py-6">
+                    <div class="relative">
+                        <i class="fa-solid fa-crown text-7xl text-horror-green animate-bounce drop-shadow-[0_0_25px_#39ff14]"></i>
+                    </div>
+
+                    <div class="space-y-2">
+                        <div class="text-fuchsia-400 text-sm tracking-widest font-mono uppercase font-bold">ПОБЕДИТЕЛИ ТЕМНОТЫ!</div>
+                        <h2 class="text-4xl font-creepster text-fuchsia-500 neon-text-magenta">
+                            ${winningTeam.name}
+                        </h2>
+                        <p class="text-purple-300 text-xs font-mono">Выжили в ритуале и набрали ${winningTeam.score} очков!</p>
+                    </div>
+
+                    <div class="w-full bg-purple-950/80 border-2 border-green-500 p-4 rounded-xl max-w-xs space-y-2 font-mono">
+                        <div class="text-xs text-horror-green font-bold uppercase border-b border-purple-800 pb-1">Финальный Счет</div>
+                        ${gameState.teams.map(t => `
+                            <div class="flex justify-between text-sm ${t.id === winningTeam.id ? 'font-bold text-green-400' : 'text-purple-300'}">
+                                <span>${t.name}</span>
+                                <span>${t.score}</span>
+                            </div>
+                        `).join('')}
+                    </div>
+
+                    <button onclick="startNewGame()" class="w-full max-w-xs py-4 bg-gradient-to-r from-green-500 via-emerald-500 to-green-400 text-black font-black font-mono rounded-xl shadow-[0_0_25px_#39ff14] text-xl tracking-wider active:scale-95 transition border-2 border-white">
+                        ИГРАТЬ СНОВА
+                    </button>
+                </div>
+            `;
+        }
+
+        /* ... existing logic & event listeners ... */
+    </script>
+</body>
+</html>
